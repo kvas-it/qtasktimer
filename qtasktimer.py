@@ -62,6 +62,7 @@ class Timer(QtCore.QTimer):
         else:
             self.time_left = max(0, self.time_left + seconds)
             self.time_total = max(0, self.time_total + seconds)
+            self.on_update(self.time_total, self.time_left)
 
 
 class TimerTrayIcon(QtWidgets.QSystemTrayIcon):
@@ -130,6 +131,7 @@ class TimerApplication(QtWidgets.QApplication):
     def _make_tray_icon(self):
         """Create tray icon and add menu to it."""
         self.tray_icon = TimerTrayIcon()
+        self.tray_icon.activated.connect(self.icon_activated)
         self._make_menu()
         self.tray_icon.show()
 
@@ -180,6 +182,11 @@ class TimerApplication(QtWidgets.QApplication):
         else:
             message = '{} minutes are over'.format(minutes)
         self.tray_icon.showMessage('Time is up', message, 0)
+
+    def icon_activated(self, reason):
+        """Handle clicks on the icon."""
+        if reason == QtWidgets.QSystemTrayIcon.Trigger:
+            self.time25()
 
     def time5(self):
         """Set timer for 5 minutes."""
