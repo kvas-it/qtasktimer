@@ -217,7 +217,7 @@ class TimerApplication(QtWidgets.QApplication):
 
     def plus1(self):
         """Add one minute to the timer."""
-        self.timer.add_time(3)
+        self.timer.add_time(60)
 
     def plus5(self):
         self.timer.add_time(300)
