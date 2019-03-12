@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='qtasktimer',
-    version='0.1.1',
+    version='0.1.2',
     author='Vasily Kuznetsov',
     author_email='kvas.it@gmail.com',
     maintainer='Vasily Kuznetsov',

@@ -31,28 +31,38 @@ class Timer(QtCore.QTimer):
         self.time_total = None
         self.time_remaining = None
 
+    def _check_and_show_remaining(self):
+        """Check if the timer has expired and show remaining time."""
+        if self.time_left is None:
+            self.on_update(0, 0)
+        elif self.time_left <= 0:
+            self.on_end(self.time_total)
+            self.stop_timer()
+        else:
+            self.on_update(self.time_total, self.time_left)
+
+    def is_active(self):
+        """Return True if timer is active."""
+        return self.time_total is not None
+
     def set_timer(self, seconds):
         """Set timer for specified number of seconds."""
         self.time_total = seconds
         self.time_left = seconds
         self.start(1000)
-        self.on_update(self.time_total, self.time_left)
+        self._check_and_show_remaining()
 
     def stop_timer(self):
         """Stop the timer."""
-        self.on_update(0, 0)
         self.time_total = None
         self.time_left = None
         self.stop()
+        self._check_and_show_remaining()
 
     def tick(self):
         """One more second passed."""
         self.time_left -= 1
-        if self.time_left <= 0:
-            self.on_end(self.time_total)
-            self.stop_timer()
-        else:
-            self.on_update(self.time_total, self.time_left)
+        self._check_and_show_remaining()
 
     def add_time(self, seconds):
         """Add more time (`seconds` can be negative to subtract)."""
@@ -62,7 +72,7 @@ class Timer(QtCore.QTimer):
         else:
             self.time_left = max(0, self.time_left + seconds)
             self.time_total = max(0, self.time_total + seconds)
-            self.on_update(self.time_total, self.time_left)
+            self._check_and_show_remaining()
 
 
 class TimerTrayIcon(QtWidgets.QSystemTrayIcon):
@@ -156,10 +166,10 @@ class TimerApplication(QtWidgets.QApplication):
         button_action.setDefaultWidget(button_box)
         menu.addAction(button_action)
         menu.addSeparator()  # --------------------------------------
-        menu.addAction('5 minutes', self.time5)
-        menu.addAction('10 minutes', self.time10)
-        menu.addAction('25 minutes', self.time25)
-        menu.addAction('45 minutes', self.time45)
+        menu.addAction('5 minutes', self.start5)
+        menu.addAction('10 minutes', self.start10)
+        menu.addAction('25 minutes', self.start25)
+        menu.addAction('45 minutes', self.start45)
         menu.addAction('cancel timer', self.timer.stop_timer)
         menu.addSeparator()  # --------------------------------------
         menu.addAction('exit', self.exit)
@@ -186,27 +196,28 @@ class TimerApplication(QtWidgets.QApplication):
     def icon_activated(self, reason):
         """Handle clicks on the icon."""
         if reason == QtWidgets.QSystemTrayIcon.Trigger:
-            self.time25()
+            if not self.timer.is_active():
+                self.start25()
 
-    def time5(self):
+    def start5(self):
         """Set timer for 5 minutes."""
         self.timer.set_timer(300)
 
-    def time10(self):
+    def start10(self):
         """Set timer for 10 minutes."""
         self.timer.set_timer(600)
 
-    def time25(self):
+    def start25(self):
         """Set timer for 25 minutes."""
         self.timer.set_timer(1500)
 
-    def time45(self):
+    def start45(self):
         """Set timer for 45 minutes."""
         self.timer.set_timer(2700)
 
     def plus1(self):
         """Add one minute to the timer."""
-        self.timer.add_time(60)
+        self.timer.add_time(3)
 
     def plus5(self):
         self.timer.add_time(300)
